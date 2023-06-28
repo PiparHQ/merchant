@@ -18,4 +18,5 @@ neardev
 
 # Dependencies
 node_modules
-*/target
+#*/target
+target/*
