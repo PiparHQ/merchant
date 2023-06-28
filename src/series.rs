@@ -14,6 +14,7 @@ impl Contract {
         &mut self,
         id: u64,
         metadata: TokenMetadata,
+        variants: Option<HashMap<String, String>>,
         royalty: Option<HashMap<AccountId, u32>>,
         price: Option<U128>
     ) {
@@ -34,6 +35,7 @@ impl Contract {
                     &id,
                     &Series {
                         metadata,
+                        variants,
                         royalty,
                         tokens: UnorderedSet::new(StorageKey::SeriesByIdInner {
                             // We get a new unique prefix for the collection

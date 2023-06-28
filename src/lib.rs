@@ -1,10 +1,10 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LazyOption, LookupMap, LookupSet, UnorderedMap, UnorderedSet};
+use near_sdk::collections::{LazyOption, LookupMap, LookupSet, UnorderedMap, UnorderedSet, Vector};
 use near_sdk::json_types::{Base64VecU8, U128};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     env, near_bindgen, require, AccountId, Balance, BorshStorageKey, CryptoHash, PanicOnDefault,
-    Promise, PromiseOrValue,
+    Promise, PromiseOrValue, is_promise_success, Gas,
 };
 use std::collections::HashMap;
 
@@ -16,6 +16,8 @@ pub use crate::nft_core::*;
 pub use crate::owner::*;
 pub use crate::royalty::*;
 pub use crate::series::*;
+pub use crate::factory::*;
+pub use crate::reward::*;
 
 mod approval;
 mod enumeration;
@@ -26,17 +28,38 @@ mod nft_core;
 mod owner;
 mod royalty;
 mod series;
+mod factory;
+mod reward;
 
 /// This spec can be treated like a version of the standard.
 pub const NFT_METADATA_SPEC: &str = "1.0.0";
 /// This is the name of the NFT standard we're using
 pub const NFT_STANDARD_NAME: &str = "nep171";
 
+// cost of deploying FT token
+pub const TOKEN_BALANCE: u128 = 4_000_000_000_000_000_000_000_000;
+
+// 0.1 near in yocto
+pub const ONE_YOCTO: u128 = 10_000_000_000_000_000_000_000;
+
+// Attach 0 near token
+pub const NO_DEPOSIT: Balance = 0;
+
+// gas calculation
+pub const fn tgas(n: u64) -> Gas {
+    Gas(n * 10u64.pow(12))
+}
+
+// Genereal gas to use for cross contract calls
+pub const GAGAS: Gas = tgas(35 + 5);
+
 // Represents the series type. All tokens will derive this data.
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Series {
     // Metadata including title, num copies etc.. that all tokens will derive from
     metadata: TokenMetadata,
+    // Variants of this product
+    variants: Option<HashMap<String, String>>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
     // Set of tokens in the collection
@@ -55,6 +78,12 @@ pub type SeriesId = u64;
 pub struct Contract {
     //contract owner
     pub owner_id: AccountId,
+
+    //store token boolean
+    pub token: bool,
+
+    //cost of deploying a token
+    pub token_cost: U128,
 
     //approved minters
     pub approved_minters: LookupSet<AccountId>,
@@ -96,7 +125,7 @@ impl Contract {
         user doesn't have to manually type metadata.
     */
     #[init]
-    pub fn new_default_meta(owner_id: AccountId, marketplace_contract_id: AccountId, name: String, symbol: String, icon: String, bg_icon: String, category: String, description: String, is_token: bool, facebook: String, twitter: String, instagram: String, tiktok: String, youtube: String, zip: String, city: String, state: String, country: String) -> Self {
+    pub fn new_default_meta(owner_id: AccountId, marketplace_contract_id: AccountId, name: String, symbol: String, icon: Option<String>, bg_icon: Option<String>, category: Option<String>, description: Option<String>, is_token: Option<bool>, facebook: Option<String>, twitter: Option<String>, instagram: Option<String>, tiktok: Option<String>, youtube: Option<String>, zip: Option<String>, city: Option<String>, state: Option<String>, country: Option<String>) -> Self {
         //calls the other function "new: with some default metadata and the owner_id passed in
         Self::new(
             owner_id,
@@ -154,6 +183,8 @@ impl Contract {
             tokens_by_id: UnorderedMap::new(StorageKey::TokensById.try_to_vec().unwrap()),
             //set the &owner_id field equal to the passed in owner_id.
             owner_id,
+            token: false,
+            token_cost: U128::from(TOKEN_BALANCE),
             metadata: LazyOption::new(
                 StorageKey::NFTContractMetadata.try_to_vec().unwrap(),
                 Some(&metadata),
