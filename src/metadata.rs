@@ -48,8 +48,6 @@ pub struct TokenMetadata {
     pub reward_amount_per_unit: Option<u64>, // amount of token to give the buyer after purchasing this product
     pub is_custom_user: Option<bool>, // is this series collection made for a particular user?
     pub user: Option<String>, // if yes, what is the ID of that user
-    pub color_variants: Option<UnorderedSet<String>>, // color variants of this product
-    pub size_variants: Option<UnorderedSet<String>>,  // size variant of this product
     pub issued_at: Option<u64>, // When token was issued or minted, Unix epoch in milliseconds
     pub expires_at: Option<u64>, // When token expires, Unix epoch in milliseconds
     pub starts_at: Option<u64>, // When token starts being valid, Unix epoch in milliseconds
@@ -85,6 +83,8 @@ pub struct JsonToken {
     pub metadata: TokenMetadata,
     //list of approved account IDs that have access to transfer the token. This maps an account ID to an approval ID
     pub approved_account_ids: HashMap<AccountId, u64>,
+    // list series variants
+    pub variants: Option<HashMap<String, String>>,
     //keep track of the royalty percentages for the token in a hash map
     pub royalty: Option<HashMap<AccountId, u32>>,
 }

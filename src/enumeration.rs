@@ -9,6 +9,8 @@ pub struct JsonSeries {
     series_id: u64,
     // Metadata including title, num copies etc.. that all tokens will derive from
     metadata: TokenMetadata,
+    // Variants of this product
+    variants: Option<HashMap<String, String>>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
     // Owner of the collection
@@ -120,6 +122,7 @@ impl Contract {
             Some(JsonSeries {
                 series_id: id,
                 metadata: series.metadata,
+                variants: series.variants,
                 royalty: series.royalty,
                 owner_id: series.owner_id,
             })
