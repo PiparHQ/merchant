@@ -142,6 +142,7 @@ impl Contract {
         //calculate the required storage which was the used - initial
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
 
+        // refund storage used
         refund_deposit(required_storage_in_bytes);
 
         // If there's some price for the token, we'll payout the series owner. Otherwise, refund the excess deposit for storage to the caller
