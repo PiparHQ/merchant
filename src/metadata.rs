@@ -89,6 +89,21 @@ pub struct JsonToken {
     pub royalty: Option<HashMap<AccountId, u32>>,
 }
 
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StorageData {
+    pub(crate) account_id: AccountId,
+    pub(crate) registration_only: bool,
+}
+
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct TokenData {
+    pub(crate) receiver_id: AccountId,
+    pub(crate) amount: U128,
+    pub(crate) memo: String,
+}
+
 pub trait NonFungibleTokenMetadata {
     //view call for returning the contract metadata
     fn nft_metadata(&self) -> NFTContractMetadata;

@@ -35,7 +35,7 @@ impl Contract {
             "Invalid subaccount"
         );
         let init_args = serde_json::to_vec(&FtData {
-            owner_id: self.owner_id.clone(),
+            owner_id: env::current_account_id(),
             total_supply,
             name,
             symbol,

@@ -65,25 +65,39 @@ pub(crate) fn assert_at_least_one_yocto() {
 }
 
 // Send all the non storage funds to the series owner
-// pub(crate) fn payout_series_owner(storage_used: u64, price_per_token: Balance, owner_id: AccountId) {
-//     //get how much it would cost to store the information
-//     let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
-//     //get the attached deposit
-//     let attached_deposit = env::attached_deposit();
-//
-//     //make sure that the attached deposit is greater than or equal to the required cost
-//     assert!(
-//         attached_deposit >= required_cost + price_per_token,
-//         "Must attach {} yoctoNEAR to cover storage and price per token {}",
-//         required_cost,
-//         price_per_token
-//     );
-//
-//     // If there's a price for the token, transfer everything but the storage to the series owner
-//     if price_per_token > 0 {
-//         Promise::new(owner_id).transfer(attached_deposit - required_cost);
-//     }
-// }
+pub(crate) fn marketplace_series_callback(storage_used: u64, price_per_token: Balance, owner_id: AccountId, attached_deposit: U128, affiliate: Option<AccountId>) {
+    //get how much it would cost to store the information
+    let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
+    //get the attached deposit
+    let attached_deposit: Balance = attached_deposit.into();
+
+    //make sure that the attached deposit is greater than or equal to the required cost
+    assert!(
+        attached_deposit >= required_cost + price_per_token,
+        "Must attach {} yoctoNEAR to cover storage and price per token {}",
+        required_cost,
+        price_per_token
+    );
+
+    if let Some(affiliateer) = affiliate {
+        // Ensure the passed in affiliate is approved by the owner
+        if let Some(affix) = series.affiliate {
+            assert!(
+                affix.contains_key(&affiliateer),
+                "Affiliateer is not approved"
+            );
+            // If there's a price for the token, transfer everything but the storage to the series owner
+            if price_per_token > 0 {
+                Promise::new(owner_id).transfer(attached_deposit - required_cost);
+            }
+        }
+    } else {
+        // If there's a price for the token, transfer everything but the storage to the series owner
+        if price_per_token > 0 {
+            Promise::new(owner_id).transfer(attached_deposit - required_cost);
+        }
+    }
+}
 
 //refund the initial deposit based on the amount of storage that was used up
 pub(crate) fn refund_deposit(storage_used: u64) {
@@ -111,13 +125,15 @@ pub(crate) fn refund_deposit(storage_used: u64) {
 impl Contract {
     /// Ensure that the caller is the owner of the contract
     pub(crate) fn assert_contract_owner(&mut self) {
-        assert!(
-            self.owner_id == env::predecessor_account_id(),
-            "only contract owner"
-        )
+        assert_eq!(self.owner_id, env::predecessor_account_id(), "only contract owner")
     }
 
-    /// Ensure that the caller is the owner of the contract
+    /// Ensure that the caller is the marketplace id
+    pub(crate) fn assert_marketplace_contract(&mut self) {
+        assert_eq!(self.marketplace_contract_id, env::predecessor_account_id(), "only marketplace contract")
+    }
+
+    /// Ensure that store has not deployed FT token before
     pub(crate) fn assert_contract_token_false(&mut self) {
         assert_eq!(
             false, self.token,

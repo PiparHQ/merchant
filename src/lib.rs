@@ -18,6 +18,7 @@ pub use crate::royalty::*;
 pub use crate::series::*;
 pub use crate::factory::*;
 pub use crate::reward::*;
+pub use crate::affiliate::*;
 
 mod approval;
 mod enumeration;
@@ -30,6 +31,7 @@ mod royalty;
 mod series;
 mod factory;
 mod reward;
+mod affiliate;
 
 /// This spec can be treated like a version of the standard.
 pub const NFT_METADATA_SPEC: &str = "1.0.0";
@@ -59,9 +61,13 @@ pub struct Series {
     // Metadata including title, num copies etc.. that all tokens will derive from
     metadata: TokenMetadata,
     // Variants of this product
-    variants: Option<HashMap<String, String>>,
+    variants: Option<HashMap<String, Vector<String>>>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
+    // List of affiliates for all the tokens in this series collection
+    affiliate: Option<LookupMap<AccountId, String>>,
+    // List of affiliates for all the tokens in this series collection
+    affiliate_conditions: Option<HashMap<String, u32>>,
     // Set of tokens in the collection
     tokens: UnorderedSet<TokenId>,
     // What is the price of each token in this series? If this is specified, when minting,
@@ -78,6 +84,9 @@ pub type SeriesId = u64;
 pub struct Contract {
     //contract owner
     pub owner_id: AccountId,
+
+    //marketplace contract id
+    pub marketplace_contract_id: AccountId,
 
     //store token boolean
     pub token: bool,
@@ -183,6 +192,8 @@ impl Contract {
             tokens_by_id: UnorderedMap::new(StorageKey::TokensById.try_to_vec().unwrap()),
             //set the &owner_id field equal to the passed in owner_id.
             owner_id,
+            //set the &marketplace_id field equal to the passed in marketplace_id.
+            marketplace_contract_id,
             token: false,
             token_cost: U128::from(TOKEN_BALANCE),
             metadata: LazyOption::new(
