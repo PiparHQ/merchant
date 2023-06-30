@@ -9,7 +9,7 @@ impl Contract {
         quantity: U128,
         buyer_account_id: AccountId,
     ) -> Promise {
-        self.assert_only_pipar();
+        self.assert_marketplace_contract();
 
         let product_index = self
             .products
@@ -27,7 +27,7 @@ impl Contract {
                 let t: u128 = reward.into();
                 let q: u128 = quantity.into();
                 let token_quantity = &t * &q;
-                let memo = format!("Thank You for Shopping at {:?}!", env::current_account_id());
+                let mem = format!("Thank You for Shopping at {:?}!", env::current_account_id());
                 let current_account = env::current_account_id().to_string();
                 let token_account: AccountId = format!("ft.{current_account}").parse().unwrap();
 
@@ -40,7 +40,7 @@ impl Contract {
                 let token_args = serde_json::to_vec(&TokenData {
                     receiver_id: buyer_account_id.clone(),
                     amount: token_quantity.into(),
-                    memo,
+                    memo: mem,
                 })
                     .unwrap();
 

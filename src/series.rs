@@ -62,7 +62,7 @@ impl Contract {
     /// Mint a new NFT that is part of a series. The caller must be an approved minter.
     /// The series ID must exist and if the metadata specifies a copy limit, you cannot exceed it.
     #[payable]
-    pub fn nft_mint(&mut self, id: U64, receiver_id: AccountId, attached_deposit: U128) {
+    pub fn nft_mint(&mut self, id: U64, receiver_id: AccountId, attached_deposit: U128, affiliate: Option<AccountId>) {
         // Measure the initial storage being used on the contract
         let initial_storage_usage = env::storage_usage();
 
@@ -143,13 +143,13 @@ impl Contract {
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
 
         // refund storage used
-        refund_deposit(required_storage_in_bytes);
+        // refund_deposit(required_storage_in_bytes);
 
         // If there's some price for the token, we'll payout the series owner. Otherwise, refund the excess deposit for storage to the caller
-        // if price_per_token > 0 {
-        //     payout_series_owner(required_storage_in_bytes, price_per_token, series.owner_id);
-        // } else {
-        //     refund_deposit(required_storage_in_bytes);
-        // }
+        if price_per_token > 0 {
+            marketplace_series_callback(required_storage_in_bytes, price_per_token, series.owner_id, attached_deposit.clone(), affiliate);
+        } else {
+            refund_deposit(required_storage_in_bytes);
+        }
     }
 }
