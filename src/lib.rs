@@ -1,6 +1,6 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LazyOption, LookupMap, LookupSet, UnorderedMap, UnorderedSet, Vector};
-use near_sdk::json_types::{Base64VecU8, U128};
+use near_sdk::json_types::{Base64VecU8, U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     env, near_bindgen, require, AccountId, Balance, BorshStorageKey, CryptoHash, PanicOnDefault,
@@ -61,13 +61,11 @@ pub struct Series {
     // Metadata including title, num copies etc.. that all tokens will derive from
     metadata: TokenMetadata,
     // Variants of this product
-    variants: Option<HashMap<String, Vector<String>>>,
+    variants: Option<HashMap<String, String>>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
     // List of affiliates for all the tokens in this series collection
-    affiliate: Option<LookupMap<AccountId, String>>,
-    // List of affiliates for all the tokens in this series collection
-    affiliate_conditions: Option<HashMap<String, u32>>,
+    affiliate: Option<HashMap<AccountId, u32>>,
     // Set of tokens in the collection
     tokens: UnorderedSet<TokenId>,
     // What is the price of each token in this series? If this is specified, when minting,
@@ -94,6 +92,9 @@ pub struct Contract {
     //cost of deploying a token
     pub token_cost: U128,
 
+    //affiliate requests
+    pub affiliate_requests: Vector<AffiliatesRequests>,
+
     //approved minters
     pub approved_minters: LookupSet<AccountId>,
 
@@ -118,6 +119,8 @@ pub struct Contract {
 pub enum StorageKey {
     ApprovedMinters,
     ApprovedCreators,
+    ApprovedAffiliates,
+    PendingAffiliates,
     SeriesById,
     SeriesByIdInner { account_id_hash: CryptoHash },
     TokensPerOwner,
@@ -134,7 +137,7 @@ impl Contract {
         user doesn't have to manually type metadata.
     */
     #[init]
-    pub fn new_default_meta(owner_id: AccountId, marketplace_contract_id: AccountId, name: String, symbol: String, icon: Option<String>, bg_icon: Option<String>, category: Option<String>, description: Option<String>, is_token: Option<bool>, facebook: Option<String>, twitter: Option<String>, instagram: Option<String>, tiktok: Option<String>, youtube: Option<String>, zip: Option<String>, city: Option<String>, state: Option<String>, country: Option<String>) -> Self {
+    pub fn new_default_meta(owner_id: AccountId, marketplace_contract_id: AccountId, name: String, symbol: String, icon: Option<String>, bg_icon: Option<String>, category: Option<String>, description: Option<String>, facebook: Option<String>, twitter: Option<String>, instagram: Option<String>, tiktok: Option<String>, youtube: Option<String>, zip: Option<String>, city: Option<String>, state: Option<String>, country: Option<String>) -> Self {
         //calls the other function "new: with some default metadata and the owner_id passed in
         Self::new(
             owner_id,
@@ -147,7 +150,6 @@ impl Contract {
                 bg_icon: bg_icon,
                 category: category,
                 description: description,
-                is_token: is_token,
                 facebook: facebook,
                 twitter: twitter,
                 instagram: instagram,
@@ -186,6 +188,7 @@ impl Contract {
         let this = Self {
             approved_minters,
             approved_creators,
+            affiliate_requests: Vector::new(StorageKey::PendingAffiliates.try_to_vec().unwrap()),
             series_by_id: UnorderedMap::new(StorageKey::SeriesById.try_to_vec().unwrap()),
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner.try_to_vec().unwrap()),

@@ -35,6 +35,7 @@ impl Contract {
                     &id,
                     &Series {
                         metadata,
+                        affiliate: Some(HashMap::new()),
                         variants,
                         royalty,
                         tokens: UnorderedSet::new(StorageKey::SeriesByIdInner {
@@ -73,7 +74,7 @@ impl Contract {
         let mut price_per_token = 0; 
         if let Some(price) = series.price {
             price_per_token = price;
-            require!(&attached_deposit > price_per_token, "Need to attach at least enough to cover price");
+            require!(attached_deposit.0 > price_per_token, "Need to attach at least enough to cover price");
         // If the series doesn't have a price, ensure the caller is an approved minter.
         } else {
             // Ensure the caller is an approved minter
@@ -147,7 +148,7 @@ impl Contract {
 
         // If there's some price for the token, we'll payout the series owner. Otherwise, refund the excess deposit for storage to the caller
         if price_per_token > 0 {
-            marketplace_series_callback(required_storage_in_bytes, price_per_token, series.owner_id, attached_deposit.clone(), affiliate);
+            self.marketplace_series_callback(id.clone(), required_storage_in_bytes, price_per_token, self.owner_id.clone(), series.owner_id, token_id, attached_deposit.clone(), affiliate);
         } else {
             refund_deposit(required_storage_in_bytes);
         }
