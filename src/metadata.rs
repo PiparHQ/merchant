@@ -17,7 +17,6 @@ pub struct NFTContractMetadata {
     pub bg_icon: Option<String>,   // background image for store
     pub category: Option<String>,  // category of store
     pub description: Option<String>, // description of store
-    pub is_token: Option<bool>,    // does this store has tokens
     pub facebook: Option<String>,   // facebook page social media link
     pub twitter: Option<String>,    // twitter page social media link
     pub instagram: Option<String>,  // instagram page social media link
@@ -83,8 +82,6 @@ pub struct JsonToken {
     pub metadata: TokenMetadata,
     //list of approved account IDs that have access to transfer the token. This maps an account ID to an approval ID
     pub approved_account_ids: HashMap<AccountId, u64>,
-    // list series variants
-    pub variants: Option<HashMap<String, String>>,
     //keep track of the royalty percentages for the token in a hash map
     pub royalty: Option<HashMap<AccountId, u32>>,
 }
@@ -102,6 +99,30 @@ pub struct TokenData {
     pub(crate) receiver_id: AccountId,
     pub(crate) amount: U128,
     pub(crate) memo: String,
+}
+
+// Represents the series type. All tokens will derive this data.
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AffiliatesRequests {
+    // Affiliate account ID
+    pub(crate) account_id: AccountId,
+    // SERIES ID of product
+    pub(crate) series_id: U64,
+    // Status of request
+    pub(crate) approved: bool,
+}
+
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct MarketplaceData {
+    pub(crate) price: Balance,
+    pub(crate) affiliate: bool,
+    pub(crate) affiliate_id: Option<AccountId>,
+    pub(crate) affiliate_percentage: Option<String>,
+    pub(crate) token_id: String,
+    pub(crate) token_owner: AccountId,
+    pub(crate) store_owner: AccountId,
 }
 
 pub trait NonFungibleTokenMetadata {
