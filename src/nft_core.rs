@@ -79,6 +79,11 @@ impl NonFungibleTokenCore for Contract {
     ) {
         //assert that the user attached exactly 1 yoctoNEAR. This is for security and so that the user will be redirected to the NEAR wallet.
         assert_one_yocto();
+        //Confirm tokenId is not locked
+        assert!(
+            self.tokens_locked.contains(&token_id),
+            "Token is currently locked, try again later"
+        );
         //get the sender to transfer the token from the sender to the receiver
         let sender_id = env::predecessor_account_id();
 
@@ -106,6 +111,12 @@ impl NonFungibleTokenCore for Contract {
     ) -> PromiseOrValue<bool> {
         //assert that the user attached exactly 1 yocto for security reasons.
         assert_one_yocto();
+
+        //Confirm tokenId is not locked
+        assert!(
+            self.tokens_locked.contains(&token_id),
+            "Token is currently locked, try again later"
+        );
 
         //get the sender ID
         let sender_id = env::predecessor_account_id();
