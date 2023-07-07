@@ -110,6 +110,9 @@ pub struct Contract {
     //keeps track of all the token IDs for a given account
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
 
+    //keeps track of tokens currently locked pending transaction completion
+    pub tokens_locked: LookupSet<String>,
+
     //keeps track of the metadata for the contract
     pub metadata: LazyOption<NFTContractMetadata>,
 }
@@ -126,6 +129,7 @@ pub enum StorageKey {
     TokensPerOwner,
     TokenPerOwnerInner { account_id_hash: CryptoHash },
     TokensById,
+    TokensLocked,
     NFTContractMetadata,
 }
 
@@ -193,6 +197,7 @@ impl Contract {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner.try_to_vec().unwrap()),
             tokens_by_id: UnorderedMap::new(StorageKey::TokensById.try_to_vec().unwrap()),
+            tokens_locked: LookupSet::new(StorageKey::TokensLocked.try_to_vec().unwrap()),
             //set the &owner_id field equal to the passed in owner_id.
             owner_id,
             //set the &marketplace_id field equal to the passed in marketplace_id.

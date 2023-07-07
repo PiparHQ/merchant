@@ -49,7 +49,7 @@ impl Contract {
         }
     }
 
-    pub fn add_affiliate(&mut self, id: U64, affiliate_id: AccountId, percentage: u32) -> Option<AffiliatesRequests> {
+    pub fn approve_affiliate(&mut self, id: U64, affiliate_id: AccountId, percentage: u32) -> Option<AffiliatesRequests> {
         self.assert_contract_owner();
 
         let index = self

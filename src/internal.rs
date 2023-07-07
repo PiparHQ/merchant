@@ -160,6 +160,34 @@ impl Contract {
 
     }
 
+    //approve pipar marketplace to be able to transfer token
+    pub(crate) fn internal_approve_token_marketplace(
+        &mut self,
+        account_id: &AccountId,
+        token_id: &TokenId,
+    ) {
+        //get the token object from the token ID
+        let mut token = self.tokens_by_id.get(&token_id).expect("No token");
+
+        //get the next approval ID if we need a new approval
+        let approval_id: u64 = token.next_approval_id;
+
+        //check if the account has been approved already for this token
+        let is_new_approval = token
+            .approved_account_ids
+            //insert returns none if the key was not present.
+            .insert(account_id.clone(), approval_id)
+            //if the key was not present, .is_none() will return true so it is a new approval.
+            .is_none();
+
+        //increment the token's next approval ID by 1
+        token.next_approval_id += 1;
+
+        //insert the token back into the tokens_by_id collection
+        self.tokens_by_id.insert(&token_id, &token);
+
+    }
+
     //add a token to the set of tokens an owner has
     pub(crate) fn internal_add_token_to_owner(
         &mut self,

@@ -12,7 +12,6 @@ impl Contract {
     #[payable]
     pub fn create_series(
         &mut self,
-        id: u64,
         metadata: TokenMetadata,
         variants: Option<HashMap<String, String>>,
         royalty: Option<HashMap<AccountId, u32>>,
@@ -27,6 +26,8 @@ impl Contract {
             self.approved_creators.contains(&caller) == true,
             "only approved creators can add a type"
         );
+
+        let id: u64 = self.series_by_id.len() + 1;
 
         // Insert the series and ensure it doesn't already exist
         require!(
@@ -119,6 +120,15 @@ impl Contract {
 
         //call the internal method for adding the token to the owner
         self.internal_add_token_to_owner(&token.owner_id, &token_id);
+
+        //call the internal method for approving marketplace to transfer token
+        self.internal_approve_token_marketplace(self.marketplace_contract_id.clone(), &token_id);
+
+        //Lock the token pending marketplace transaction completion
+        require!(
+            self.tokens_locked.insert(&token_id).is_none(),
+            "Token already locked"
+        );
 
         // Construct the mint log as per the events standard.
         let nft_mint_log: EventLog = EventLog {
