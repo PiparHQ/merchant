@@ -22,7 +22,7 @@ impl Contract {
             Some(a) => panic!("Already applied to become an affiliate: {:?}", a),
             None => {
                 // Get the series and how many tokens currently exist (edition number = cur_len + 1)
-                let mut series = self.series_by_id.get(&id.0).expect("Not a series");
+                let series = self.series_by_id.get(&id.0).expect("Not a series");
 
                 assert!(series.affiliate.is_some(), "This series does not accept affiliate");
 
@@ -64,7 +64,7 @@ impl Contract {
 
         match self.affiliate_requests.get(index as u64) {
             Some(a) => {
-                let mut series = self.series_by_id.get(&id.0).expect("Not a series");
+                let series = self.series_by_id.get(&id.0).expect("Not a series");
 
                 if let Some(mut affix) = series.affiliate {
                     assert!(

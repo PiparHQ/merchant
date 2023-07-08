@@ -13,7 +13,7 @@ impl Contract {
     pub fn create_series(
         &mut self,
         metadata: TokenMetadata,
-        variants: Option<HashMap<String, String>>,
+        colors: HashMap<String, u32>,
         royalty: Option<HashMap<AccountId, u32>>,
         price: Option<U128>
     ) {
@@ -37,7 +37,7 @@ impl Contract {
                     &Series {
                         metadata,
                         affiliate: Some(HashMap::new()),
-                        variants,
+                        colors,
                         royalty,
                         tokens: UnorderedSet::new(StorageKey::SeriesByIdInner {
                             // We get a new unique prefix for the collection
@@ -64,7 +64,7 @@ impl Contract {
     /// Mint a new NFT that is part of a series. The caller must be an approved minter.
     /// The series ID must exist and if the metadata specifies a copy limit, you cannot exceed it.
     #[payable]
-    pub fn nft_mint(&mut self, id: U64, receiver_id: AccountId, attached_deposit: U128, affiliate: Option<AccountId>) {
+    pub fn nft_mint(&mut self, id: U64, receiver_id: AccountId, attached_deposit: U128, color: String, affiliate: Option<AccountId>) {
         // Measure the initial storage being used on the contract
         let initial_storage_usage = env::storage_usage();
 
@@ -95,6 +95,20 @@ impl Contract {
             );
         }
 
+        assert!(
+            series.colors.contains_key(&color),
+            "Color is not present"
+        );
+
+        if let Some(cur_color_len) = series.colors.get(&color) {
+            assert!(
+                cur_color_len >= &1,
+                "This color for product is not available, choose another color"
+            );
+
+            series.colors.insert(color, cur_color_len - &1);
+        }
+
         // The token ID is stored internally as `${series_id}:${edition}`
         let token_id = format!("{}:{}", id.0, cur_len + 1);
         series.tokens.insert(&token_id);
@@ -121,14 +135,13 @@ impl Contract {
         //call the internal method for adding the token to the owner
         self.internal_add_token_to_owner(&token.owner_id, &token_id);
 
+        let marketplace_id = self.marketplace_contract_id.clone();
+
         //call the internal method for approving marketplace to transfer token
-        self.internal_approve_token_marketplace(self.marketplace_contract_id.clone(), &token_id);
+        self.internal_approve_token_marketplace(&marketplace_id, &token_id);
 
         //Lock the token pending marketplace transaction completion
-        require!(
-            self.tokens_locked.insert(&token_id).is_none(),
-            "Token already locked"
-        );
+        assert_eq!(self.tokens_locked.insert(&token_id), true);
 
         // Construct the mint log as per the events standard.
         let nft_mint_log: EventLog = EventLog {

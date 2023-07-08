@@ -42,9 +42,9 @@ pub struct TokenMetadata {
     pub buy_timeout: Option<u64>, // time seller agrees to fulfil an order to a buyer else the buyer gets refunded
     pub is_discount: Option<bool>, // does the seller want to give the buyer a discount on this purchase
     pub discount_percent: Option<u64>, // upto to what percentage %?
-    pub token_amount_per_unit: Option<u64>, // number of tokens to give up by the buyer before accessing this discount
+    pub token_amount_per_unit: Option<u128>, // number of tokens to give up by the buyer before accessing this discount
     pub is_reward: Option<bool>, // does the seller want to reward a buyer with a it's store tokens after successfully purchasing this product
-    pub reward_amount_per_unit: Option<u64>, // amount of token to give the buyer after purchasing this product
+    pub reward_amount_per_unit: Option<u128>, // amount of token to give the buyer after purchasing this product
     pub is_custom_user: Option<bool>, // is this series collection made for a particular user?
     pub user: Option<String>, // if yes, what is the ID of that user
     pub issued_at: Option<u64>, // When token was issued or minted, Unix epoch in milliseconds

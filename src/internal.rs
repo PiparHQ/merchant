@@ -108,7 +108,7 @@ impl Contract {
     }
 
     // Send all the non storage funds to the series owner
-    pub(crate) fn marketplace_series_callback(&mut self, id: U64, storage_used: u64, price_per_token: Balance, store_owner: AccountId, owner_id: AccountId, token_id: String, attached_deposit: U128, affiliate: Option<AccountId>) {
+    pub(crate) fn marketplace_series_callback(&mut self, id: U64, storage_used: u64, price_per_token: Balance, store_owner: AccountId, owner_id: AccountId, token_id: String, attached_deposit: U128, affiliate: Option<AccountId>) -> Option<MarketplaceData> {
         //get how much it would cost to store the information
         let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
         //get the attached deposit
@@ -123,7 +123,7 @@ impl Contract {
         );
 
         // Get the series
-        let mut series = self.series_by_id.get(&id.0).expect("Not a series");
+        let series = self.series_by_id.get(&id.0).expect("Not a series");
 
         if let Some(affiliateer) = affiliate {
             // Ensure the passed in affiliate is approved by the owner
@@ -132,32 +132,48 @@ impl Contract {
                     affix.contains_key(&affiliateer),
                     "Affiliateer is not approved"
                 );
-            }
-        }
-                //         if let Some(percentage) = affix.get(&affiliateer) {
-                //             let res = MarketplaceData {
-                //                 price: price_per_token,
-                //                 affiliate: true,
-                //                 affiliate_id: Some(affiliateer.clone()),
-                //                 affiliate_percentage: None,
-                //                 token_id,
-                //                 token_owner: owner_id,
-                //                 store_owner,
-                //             };
-                //         }
-                //     }
-                // } else {
-                //     let res = MarketplaceData {
-                //         price: price_per_token,
-                //         affiliate: false,
-                //         affiliate_id: None,
-                //         affiliate_percentage: None,
-                //         token_id,
-                //         token_owner: owner_id,
-                //         store_owner,
-                //     };
-                // }
+                if let Some(percentage) = affix.get(&affiliateer) {
+                    let res = MarketplaceData {
+                        price: price_per_token,
+                        affiliate: true,
+                        affiliate_id: Some(affiliateer.clone()),
+                        affiliate_percentage: None,
+                        token_id,
+                        token_owner: owner_id,
+                        store_owner,
+                    };
 
+                    Some(res)
+                } else {
+                    let res = MarketplaceData {
+                        price: price_per_token,
+                        affiliate: false,
+                        affiliate_id: None,
+                        affiliate_percentage: None,
+                        token_id,
+                        token_owner: owner_id,
+                        store_owner,
+                    };
+
+                    Some(res)
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    //unlock a locked token
+    pub(crate) fn unlock_token(
+        &mut self,
+        token_id: &TokenId,
+    ) {
+        //ensure smart contract is only called by pipar marketplace
+        self.assert_marketplace_contract();
+        //remove the token
+        assert_eq!(self.tokens_locked.remove(token_id), true);
     }
 
     //approve pipar marketplace to be able to transfer token
