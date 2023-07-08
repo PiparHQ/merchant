@@ -60,8 +60,8 @@ pub const GAGAS: Gas = tgas(35 + 5);
 pub struct Series {
     // Metadata including title, num copies etc.. that all tokens will derive from
     metadata: TokenMetadata,
-    // Variants of this product
-    variants: Option<HashMap<String, String>>,
+    // colors of this product
+    colors: HashMap<String, u32>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
     // List of affiliates for all the tokens in this series collection
