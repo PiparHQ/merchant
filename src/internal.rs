@@ -94,6 +94,18 @@ impl Contract {
         assert_eq!(self.owner_id, env::predecessor_account_id(), "only contract owner")
     }
 
+    pub(crate) fn assert_store_owner(&self) -> bool {
+        return if env::signer_account_id() == self.owner_id {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub(crate) fn get_store_owner(&self) -> AccountId {
+        self.owner_id.clone()
+    }
+
     /// Ensure that the caller is the marketplace id
     pub(crate) fn assert_marketplace_contract(&mut self) {
         assert_eq!(self.marketplace_contract_id, env::predecessor_account_id(), "only marketplace contract")
@@ -105,6 +117,14 @@ impl Contract {
             false, self.token,
             "Store owner has already deployed a token"
         )
+    }
+
+    pub(crate) fn get_token_cost(&self) -> u128 {
+        self.token_cost.into()
+    }
+
+    pub(crate) fn has_token(&self) -> bool {
+        self.token.into()
     }
 
     // Send all the non storage funds to the series owner
@@ -130,14 +150,14 @@ impl Contract {
             if let Some(affix) = series.affiliate {
                 assert!(
                     affix.contains_key(&affiliateer),
-                    "Affiliateer is not approved"
+                    "Affiliateer was not approved"
                 );
                 if let Some(percentage) = affix.get(&affiliateer) {
                     let res = MarketplaceData {
                         price: price_per_token,
                         affiliate: true,
                         affiliate_id: Some(affiliateer.clone()),
-                        affiliate_percentage: None,
+                        affiliate_percentage: Some(*percentage),
                         token_id,
                         token_owner: owner_id,
                         store_owner,

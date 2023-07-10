@@ -35,17 +35,17 @@ pub struct NFTContractMetadata {
 #[serde(crate = "near_sdk::serde")]
 pub struct TokenMetadata {
     pub title: Option<String>, // ex. "Arch Nemesis: Mail Carrier" or "Parcel #5055"
-    pub description: Option<String>, // free-form description
-    pub media: Option<String>, // URL to associated media, preferably to decentralized, content-addressed storage
+    pub description: String, // free-form description
+    pub media: String, // URL to associated media, preferably to decentralized, content-addressed storage
     pub media_hash: Option<Base64VecU8>, // Base64-encoded sha256 hash of content referenced by the `media` field. Required if `media` is included.
     pub copies: Option<u64>, // number of copies of this set of metadata in existence when token was minted.
-    pub buy_timeout: Option<u64>, // time seller agrees to fulfil an order to a buyer else the buyer gets refunded
-    pub is_discount: Option<bool>, // does the seller want to give the buyer a discount on this purchase
-    pub discount_percent: Option<u64>, // upto to what percentage %?
-    pub token_amount_per_unit: Option<u128>, // number of tokens to give up by the buyer before accessing this discount
-    pub is_reward: Option<bool>, // does the seller want to reward a buyer with a it's store tokens after successfully purchasing this product
-    pub reward_amount_per_unit: Option<u128>, // amount of token to give the buyer after purchasing this product
-    pub is_custom_user: Option<bool>, // is this series collection made for a particular user?
+    pub buy_timeout: u64, // time seller agrees to fulfil an order to a buyer else the buyer gets refunded
+    pub is_discount: bool, // does the seller want to give the buyer a discount on this purchase
+    pub discount_percent: u64, // upto to what percentage %?
+    pub token_amount_per_unit: U128, // number of tokens to give up by the buyer before accessing this discount
+    pub is_reward: bool, // does the seller want to reward a buyer with a it's store tokens after successfully purchasing this product
+    pub reward_amount_per_unit: U128, // amount of token to give the buyer after purchasing this product
+    pub is_custom_user: bool, // is this series collection made for a particular user?
     pub user: Option<String>, // if yes, what is the ID of that user
     pub issued_at: Option<u64>, // When token was issued or minted, Unix epoch in milliseconds
     pub expires_at: Option<u64>, // When token expires, Unix epoch in milliseconds
@@ -119,7 +119,7 @@ pub struct MarketplaceData {
     pub(crate) price: Balance,
     pub(crate) affiliate: bool,
     pub(crate) affiliate_id: Option<AccountId>,
-    pub(crate) affiliate_percentage: Option<String>,
+    pub(crate) affiliate_percentage: Option<u32>,
     pub(crate) token_id: String,
     pub(crate) token_owner: AccountId,
     pub(crate) store_owner: AccountId,
