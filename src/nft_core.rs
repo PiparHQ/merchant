@@ -193,6 +193,8 @@ impl NonFungibleTokenCore for Contract {
                 token_id,
                 owner_id: token.owner_id,
                 metadata,
+                colors: cur_series.colors,
+                price: cur_series.price,
                 approved_account_ids: token.approved_account_ids,
                 royalty: cur_series.royalty,
             })
