@@ -13,6 +13,8 @@ pub struct JsonSeries {
     colors: HashMap<String, u32>,
     // Royalty used for all tokens in the collection
     royalty: Option<HashMap<AccountId, u32>>,
+    // Token price
+    price: Option<Balance>,
     // Owner of the collection
     owner_id: AccountId,
 }
@@ -124,6 +126,7 @@ impl Contract {
                 metadata: series.metadata,
                 colors: series.colors,
                 royalty: series.royalty,
+                price: series.price,
                 owner_id: series.owner_id,
             })
         } else {

@@ -94,7 +94,7 @@ impl Contract {
         assert_eq!(self.owner_id, env::predecessor_account_id(), "only contract owner")
     }
 
-    pub(crate) fn assert_store_owner(&self) -> bool {
+    pub fn assert_store_owner(&self) -> bool {
         return if env::signer_account_id() == self.owner_id {
             true
         } else {
@@ -102,7 +102,7 @@ impl Contract {
         }
     }
 
-    pub(crate) fn get_store_owner(&self) -> AccountId {
+    pub fn get_store_owner(&self) -> AccountId {
         self.owner_id.clone()
     }
 
@@ -119,11 +119,11 @@ impl Contract {
         )
     }
 
-    pub(crate) fn get_token_cost(&self) -> u128 {
+    pub fn get_token_cost(&self) -> u128 {
         self.token_cost.into()
     }
 
-    pub(crate) fn has_token(&self) -> bool {
+    pub fn has_token(&self) -> bool {
         self.token.into()
     }
 

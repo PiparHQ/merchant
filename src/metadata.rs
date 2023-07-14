@@ -80,10 +80,14 @@ pub struct JsonToken {
     pub owner_id: AccountId,
     //token metadata
     pub metadata: TokenMetadata,
+    // colors of this product
+    pub colors: HashMap<String, u32>,
     //list of approved account IDs that have access to transfer the token. This maps an account ID to an approval ID
     pub approved_account_ids: HashMap<AccountId, u64>,
     //keep track of the royalty percentages for the token in a hash map
     pub royalty: Option<HashMap<AccountId, u32>>,
+    //keep track of the price for the token
+    pub price: Option<Balance>,
 }
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
