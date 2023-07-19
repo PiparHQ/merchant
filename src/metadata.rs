@@ -93,16 +93,16 @@ pub struct JsonToken {
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct StorageData {
-    pub(crate) account_id: AccountId,
-    pub(crate) registration_only: bool,
+    pub account_id: AccountId,
+    pub registration_only: bool,
 }
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct TokenData {
-    pub(crate) receiver_id: AccountId,
-    pub(crate) amount: U128,
-    pub(crate) memo: String,
+    pub receiver_id: AccountId,
+    pub amount: U128,
+    pub memo: String,
 }
 
 // Represents the series type. All tokens will derive this data.
@@ -110,23 +110,23 @@ pub struct TokenData {
 #[serde(crate = "near_sdk::serde")]
 pub struct AffiliatesRequests {
     // Affiliate account ID
-    pub(crate) account_id: AccountId,
+    pub account_id: AccountId,
     // SERIES ID of product
-    pub(crate) series_id: U64,
+    pub series_id: U64,
     // Status of request
-    pub(crate) approved: bool,
+    pub approved: bool,
 }
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct MarketplaceData {
-    pub(crate) price: Balance,
-    pub(crate) affiliate: bool,
-    pub(crate) affiliate_id: Option<AccountId>,
-    pub(crate) affiliate_percentage: Option<u32>,
-    pub(crate) token_id: String,
-    pub(crate) token_owner: AccountId,
-    pub(crate) store_owner: AccountId,
+    pub price: Balance,
+    pub affiliate: bool,
+    pub affiliate_id: Option<AccountId>,
+    pub affiliate_percentage: Option<u32>,
+    pub token_id: String,
+    pub token_owner: AccountId,
+    pub store_owner: AccountId,
 }
 
 pub trait NonFungibleTokenMetadata {

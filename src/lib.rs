@@ -213,4 +213,54 @@ impl Contract {
         //return the Contract object
         this
     }
+
+    pub fn assert_store_owner(&self) -> bool {
+        return if env::signer_account_id() == self.owner_id {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn get_store_owner(&self) -> AccountId {
+        self.owner_id.clone()
+    }
+
+    pub fn get_token_cost(&self) -> u128 {
+        self.token_cost.into()
+    }
+
+    pub fn has_token(&self) -> bool {
+        self.token.into()
+    }
+
+    /// Ensure that the caller is the owner of the contract
+    pub fn assert_contract_owner(&mut self) {
+        assert_eq!(self.owner_id, env::predecessor_account_id(), "only contract owner")
+    }
+
+    /// Ensure that the caller is the marketplace id
+    pub fn assert_marketplace_contract(&mut self) {
+        assert_eq!(self.marketplace_contract_id, env::predecessor_account_id(), "only marketplace contract")
+    }
+
+    /// Ensure that store has not deployed FT token before
+    pub fn assert_contract_token_false(&mut self) {
+        assert_eq!(
+            false, self.token,
+            "Store owner has already deployed a token"
+        )
+    }
+
+    //unlock a locked token
+    pub fn unlock_token(
+        &mut self,
+        token_id: &TokenId,
+    ) {
+        //ensure smart contract is only called by pipar marketplace
+        self.assert_marketplace_contract();
+        //remove the token
+        assert_eq!(self.tokens_locked.remove(token_id), true);
+    }
+
 }
