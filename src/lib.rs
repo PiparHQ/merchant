@@ -263,4 +263,84 @@ impl Contract {
         assert_eq!(self.tokens_locked.remove(token_id), true);
     }
 
+    // Send all the non storage funds to the series owner
+    pub fn marketplace_series_callback(&mut self, id: U64, storage_used: u64, price_per_token: Balance, store_owner: AccountId, owner_id: AccountId, token_id: String, attached_deposit: U128, affiliate: Option<AccountId>) -> MarketplaceData {
+        //ensure smart contract is only called by pipar marketplace
+        self.assert_marketplace_contract();
+        //get how much it would cost to store the information
+        let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
+        //get the attached deposit
+        let attached_deposit: Balance = attached_deposit.into();
+
+        //make sure that the attached deposit is greater than or equal to the required cost
+        assert!(
+            attached_deposit >= required_cost + price_per_token,
+            "Must attach {} yoctoNEAR to cover storage and price per token {}",
+            required_cost,
+            price_per_token
+        );
+
+        // Get the series
+        let series = self.series_by_id.get(&id.0).expect("Not a series");
+
+        if let Some(affiliateer) = affiliate {
+            // Ensure the passed in affiliate is approved by the owner
+            if let Some(affix) = series.affiliate {
+                assert!(
+                    affix.contains_key(&affiliateer),
+                    "Affiliateer was not approved"
+                );
+                if let Some(percentage) = affix.get(&affiliateer) {
+                        let res = MarketplaceData {
+                            price: price_per_token,
+                            affiliate: true,
+                            affiliate_id: Some(affiliateer.clone()),
+                            affiliate_percentage: Some(percentage.clone()),
+                            token_id,
+                            token_owner: owner_id,
+                            store_owner,
+                        };
+
+                        res
+                } else {
+                    let res = MarketplaceData {
+                        price: price_per_token,
+                        affiliate: false,
+                        affiliate_id: None,
+                        affiliate_percentage: None,
+                        token_id,
+                        token_owner: owner_id,
+                        store_owner,
+                    };
+
+                    res
+                }
+            } else {
+                let res = MarketplaceData {
+                    price: price_per_token,
+                    affiliate: false,
+                    affiliate_id: None,
+                    affiliate_percentage: None,
+                    token_id,
+                    token_owner: owner_id,
+                    store_owner,
+                };
+
+                res
+            }
+        } else {
+            let res = MarketplaceData {
+                price: price_per_token,
+                affiliate: false,
+                affiliate_id: None,
+                affiliate_percentage: None,
+                token_id,
+                token_owner: owner_id,
+                store_owner,
+            };
+
+            res
+        }
+    }
+
 }
