@@ -1,5 +1,4 @@
 use crate::*;
-// use near_sdk::ext_contract;
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
